@@ -188,6 +188,119 @@
             uploadPrompt.classList.remove('hidden');
             previewContainer.classList.add('hidden');
         });
-    </script>
+    </script><script>
+    // Elements
+    const dropZone = document.getElementById('drop-zone');
+    const photoInput = document.getElementById('photo-input');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const previewContainer = document.getElementById('preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const fileName = document.getElementById('file-name');
+    const removePhoto = document.getElementById('remove-photo');
+    const generateBtn = document.getElementById('generate-btn');
+
+    const placeholderState = document.getElementById('placeholder-state');
+    const loadingState = document.getElementById('loading-state');
+    const resultImage = document.getElementById('result-image');
+    const actionButtons = document.getElementById('action-buttons');
+    const downloadLink = document.getElementById('download-link');
+
+    let base64Image = null;
+    let selectedSkinTone = 'medium-fair';
+
+    // File Upload Handlers
+    dropZone.addEventListener('click', () => photoInput.click());
+
+    photoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                base64Image = event.target.result;
+                imagePreview.src = base64Image;
+                fileName.textContent = file.name;
+                uploadPrompt.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    removePhoto.addEventListener('click', (e) => {
+        e.stopPropagation();
+        photoInput.value = '';
+        base64Image = null;
+        uploadPrompt.classList.remove('hidden');
+        previewContainer.classList.add('hidden');
+    });
+
+    // Skin Tone Selector Logic
+    document.querySelectorAll('#skin-swatches button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('#skin-swatches button').forEach(b => b.classList.remove('ring-4', 'ring-purple-500'));
+            e.currentTarget.classList.add('ring-4', 'ring-purple-500');
+            selectedSkinTone = e.currentTarget.getAttribute('data-skin');
+        });
+    });
+
+    // Generate Button Handler
+    generateBtn.addEventListener('click', async () => {
+        if (!base64Image) {
+            alert('Please upload a reference photo first!');
+            return;
+        }
+
+        // Gather all UI controls
+        const features = [];
+        if (document.getElementById('feature-beard').checked) features.push('full beard / stubble');
+        if (document.getElementById('feature-sunglasses').checked) features.push('stylish sunglasses');
+        if (document.getElementById('feature-glasses').checked) features.push('prescription glasses');
+        if (document.getElementById('feature-birthmark').checked) features.push('facial birthmark');
+        if (document.getElementById('feature-watch').checked) features.push('wristwatch');
+        if (document.getElementById('feature-earrings').checked) features.push('earrings');
+
+        const payload = {
+            imageBase64: base64Image,
+            skinTone: selectedSkinTone,
+            features: features,
+            material: document.getElementById('material-select').value,
+            scene: document.getElementById('scene-select').value,
+            customNotes: document.getElementById('custom-notes').value
+        };
+
+        // UI Loading State
+        placeholderState.classList.add('hidden');
+        resultImage.classList.add('hidden');
+        actionButtons.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+        generateBtn.disabled = true;
+
+        try {
+            // Call your Serverless API Endpoint
+            const response = await fetch('/api/generate-plushie', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.imageUrl) {
+                resultImage.src = data.imageUrl;
+                downloadLink.href = data.imageUrl;
+                loadingState.classList.add('hidden');
+                resultImage.classList.remove('hidden');
+                actionButtons.classList.remove('hidden');
+            } else {
+                throw new Error(data.error || 'Generation failed');
+            }
+        } catch (err) {
+            alert('Error generating plushie: ' + err.message);
+            loadingState.classList.add('hidden');
+            placeholderState.classList.remove('hidden');
+        } finally {
+            generateBtn.disabled = false;
+        }
+    });
 </body>
 </html>
