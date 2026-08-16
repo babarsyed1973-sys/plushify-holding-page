@@ -63,7 +63,7 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Skin Tone</label>
                     <div class="flex gap-3 flex-wrap" id="skin-swatches">
                         <button type="button" data-skin="fair" class="w-8 h-8 rounded-full bg-[#FFE0D1] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
-                        <button type="button" data-skin="medium-fair" class="w-8 h-8 rounded-full bg-[#F3C5A5] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                        <button type="button" data-skin="medium-fair" class="w-8 h-8 rounded-full bg-[#F3C5A5] border-2 border-transparent focus:border-purple-600 ring-4 ring-purple-500 shadow-sm"></button>
                         <button type="button" data-skin="tan" class="w-8 h-8 rounded-full bg-[#D19B74] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
                         <button type="button" data-skin="deep-tan" class="w-8 h-8 rounded-full bg-[#8D5531] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
                         <button type="button" data-skin="rich-dark" class="w-8 h-8 rounded-full bg-[#4A2B18] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
@@ -99,10 +99,10 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Plushie Material</label>
                     <select id="material-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="fleece">Ultra-Soft Fleece (Classic Marshmallow)</option>
-                        <option value="crochet">Crochet / Knitted</option>
-                        <option value="velvet">Velvet Plush</option>
-                        <option value="sherpa">Sherpa Faux Fur</option>
+                        <option value="ultra-soft fleece">Ultra-Soft Fleece (Classic Marshmallow)</option>
+                        <option value="crochet and knitted wool">Crochet / Knitted</option>
+                        <option value="velvet plush">Velvet Plush</option>
+                        <option value="sherpa faux fur">Sherpa Faux Fur</option>
                     </select>
                 </div>
 
@@ -110,10 +110,10 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Setting / Background</label>
                     <select id="scene-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="poolside">Poolside Sunbed</option>
-                        <option value="beach">Tropical Beach Sunset</option>
-                        <option value="bedroom">Cozy Bedroom Shelf</option>
-                        <option value="studio">Minimalist Studio (Solid Color)</option>
+                        <option value="poolside sunbed">Poolside Sunbed</option>
+                        <option value="tropical beach sunset">Tropical Beach Sunset</option>
+                        <option value="cozy bedroom shelf">Cozy Bedroom Shelf</option>
+                        <option value="minimalist studio soft gradient">Minimalist Studio (Solid Color)</option>
                     </select>
                 </div>
 
@@ -143,20 +143,24 @@
                     <div id="loading-state" class="hidden p-6 text-purple-600 text-center">
                         <div class="animate-spin text-4xl mb-3">🌀</div>
                         <p class="text-sm font-bold">Stitching your plushie...</p>
-                        <p class="text-xs text-slate-400 mt-1">This usually takes ~10 seconds</p>
+                        <p class="text-xs text-slate-400 mt-1">This usually takes ~10-15 seconds</p>
                     </div>
                     <img id="result-image" src="" alt="Generated Plushie" class="hidden w-full h-full object-cover">
                 </div>
 
                 <div id="action-buttons" class="hidden mt-4 grid grid-cols-2 gap-3">
-                    <a id="download-link" href="#" download="plushie.png" class="bg-slate-900 text-white text-xs font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors">Download HD</a>
-                    <button id="share-btn" class="bg-purple-100 text-purple-700 text-xs font-bold py-3 rounded-xl hover:bg-purple-200 transition-colors">Share Avatar</button>
+                    <a id="download-link" href="#" download="plushie.png" target="_blank" class="bg-slate-900 text-white text-xs font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center gap-1">
+                        Download HD
+                    </a>
+                    <button id="share-btn" type="button" class="bg-purple-100 text-purple-700 text-xs font-bold py-3 rounded-xl hover:bg-purple-200 transition-colors">
+                        Share Avatar
+                    </button>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Basic JS for UI interaction -->
+    <!-- Interactive Script -->
     <script>
         const dropZone = document.getElementById('drop-zone');
         const photoInput = document.getElementById('photo-input');
@@ -165,7 +169,18 @@
         const imagePreview = document.getElementById('image-preview');
         const fileName = document.getElementById('file-name');
         const removePhoto = document.getElementById('remove-photo');
+        const generateBtn = document.getElementById('generate-btn');
 
+        const placeholderState = document.getElementById('placeholder-state');
+        const loadingState = document.getElementById('loading-state');
+        const resultImage = document.getElementById('result-image');
+        const actionButtons = document.getElementById('action-buttons');
+        const downloadLink = document.getElementById('download-link');
+
+        let base64Image = null;
+        let selectedSkinTone = 'medium-fair';
+
+        // Drag & Drop / Click Upload Logic
         dropZone.addEventListener('click', () => photoInput.click());
 
         photoInput.addEventListener('change', (e) => {
@@ -173,7 +188,8 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    imagePreview.src = event.target.result;
+                    base64Image = event.target.result;
+                    imagePreview.src = base64Image;
                     fileName.textContent = file.name;
                     uploadPrompt.classList.add('hidden');
                     previewContainer.classList.remove('hidden');
@@ -185,122 +201,78 @@
         removePhoto.addEventListener('click', (e) => {
             e.stopPropagation();
             photoInput.value = '';
+            base64Image = null;
             uploadPrompt.classList.remove('hidden');
             previewContainer.classList.add('hidden');
         });
-    </script><script>
-    // Elements
-    const dropZone = document.getElementById('drop-zone');
-    const photoInput = document.getElementById('photo-input');
-    const uploadPrompt = document.getElementById('upload-prompt');
-    const previewContainer = document.getElementById('preview-container');
-    const imagePreview = document.getElementById('image-preview');
-    const fileName = document.getElementById('file-name');
-    const removePhoto = document.getElementById('remove-photo');
-    const generateBtn = document.getElementById('generate-btn');
 
-    const placeholderState = document.getElementById('placeholder-state');
-    const loadingState = document.getElementById('loading-state');
-    const resultImage = document.getElementById('result-image');
-    const actionButtons = document.getElementById('action-buttons');
-    const downloadLink = document.getElementById('download-link');
-
-    let base64Image = null;
-    let selectedSkinTone = 'medium-fair';
-
-    // File Upload Handlers
-    dropZone.addEventListener('click', () => photoInput.click());
-
-    photoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                base64Image = event.target.result;
-                imagePreview.src = base64Image;
-                fileName.textContent = file.name;
-                uploadPrompt.classList.add('hidden');
-                previewContainer.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    removePhoto.addEventListener('click', (e) => {
-        e.stopPropagation();
-        photoInput.value = '';
-        base64Image = null;
-        uploadPrompt.classList.remove('hidden');
-        previewContainer.classList.add('hidden');
-    });
-
-    // Skin Tone Selector Logic
-    document.querySelectorAll('#skin-swatches button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('#skin-swatches button').forEach(b => b.classList.remove('ring-4', 'ring-purple-500'));
-            e.currentTarget.classList.add('ring-4', 'ring-purple-500');
-            selectedSkinTone = e.currentTarget.getAttribute('data-skin');
-        });
-    });
-
-    // Generate Button Handler
-    generateBtn.addEventListener('click', async () => {
-        if (!base64Image) {
-            alert('Please upload a reference photo first!');
-            return;
-        }
-
-        // Gather all UI controls
-        const features = [];
-        if (document.getElementById('feature-beard').checked) features.push('full beard / stubble');
-        if (document.getElementById('feature-sunglasses').checked) features.push('stylish sunglasses');
-        if (document.getElementById('feature-glasses').checked) features.push('prescription glasses');
-        if (document.getElementById('feature-birthmark').checked) features.push('facial birthmark');
-        if (document.getElementById('feature-watch').checked) features.push('wristwatch');
-        if (document.getElementById('feature-earrings').checked) features.push('earrings');
-
-        const payload = {
-            imageBase64: base64Image,
-            skinTone: selectedSkinTone,
-            features: features,
-            material: document.getElementById('material-select').value,
-            scene: document.getElementById('scene-select').value,
-            customNotes: document.getElementById('custom-notes').value
-        };
-
-        // UI Loading State
-        placeholderState.classList.add('hidden');
-        resultImage.classList.add('hidden');
-        actionButtons.classList.add('hidden');
-        loadingState.classList.remove('hidden');
-        generateBtn.disabled = true;
-
-        try {
-            // Call your Serverless API Endpoint
-            const response = await fetch('/api/generate-plushie', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+        // Skin Tone Selector
+        document.querySelectorAll('#skin-swatches button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#skin-swatches button').forEach(b => b.classList.remove('ring-4', 'ring-purple-500'));
+                e.currentTarget.classList.add('ring-4', 'ring-purple-500');
+                selectedSkinTone = e.currentTarget.getAttribute('data-skin');
             });
+        });
 
-            const data = await response.json();
-
-            if (data.success && data.imageUrl) {
-                resultImage.src = data.imageUrl;
-                downloadLink.href = data.imageUrl;
-                loadingState.classList.add('hidden');
-                resultImage.classList.remove('hidden');
-                actionButtons.classList.remove('hidden');
-            } else {
-                throw new Error(data.error || 'Generation failed');
+        // Generate Plushie Button Event Handler
+        generateBtn.addEventListener('click', async () => {
+            if (!base64Image) {
+                alert('Please upload a reference photo first!');
+                return;
             }
-        } catch (err) {
-            alert('Error generating plushie: ' + err.message);
-            loadingState.classList.add('hidden');
-            placeholderState.classList.remove('hidden');
-        } finally {
-            generateBtn.disabled = false;
-        }
-    });
+
+            const features = [];
+            if (document.getElementById('feature-beard')?.checked) features.push('full beard / stubble');
+            if (document.getElementById('feature-sunglasses')?.checked) features.push('stylish sunglasses');
+            if (document.getElementById('feature-glasses')?.checked) features.push('prescription glasses');
+            if (document.getElementById('feature-birthmark')?.checked) features.push('facial birthmark');
+            if (document.getElementById('feature-watch')?.checked) features.push('wristwatch');
+            if (document.getElementById('feature-earrings')?.checked) features.push('earrings');
+
+            const payload = {
+                imageBase64: base64Image,
+                skinTone: selectedSkinTone,
+                features: features,
+                material: document.getElementById('material-select')?.value,
+                scene: document.getElementById('scene-select')?.value,
+                customNotes: document.getElementById('custom-notes')?.value
+            };
+
+            // Switch to loading UI state
+            placeholderState.classList.add('hidden');
+            resultImage.classList.add('hidden');
+            actionButtons.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            generateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/generate-plushie', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.imageUrl) {
+                    resultImage.src = data.imageUrl;
+                    downloadLink.href = data.imageUrl;
+                    loadingState.classList.add('hidden');
+                    resultImage.classList.remove('hidden');
+                    actionButtons.classList.remove('hidden');
+                } else {
+                    throw new Error(data.error || 'API returned an empty result.');
+                }
+            } catch (err) {
+                alert('Generation Error: ' + err.message);
+                console.error('Plushify Error:', err);
+                loadingState.classList.add('hidden');
+                placeholderState.classList.remove('hidden');
+            } finally {
+                generateBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
