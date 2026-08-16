@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plushify — Turn Your Photos Into Ultra-Soft Plushies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Navbar -->
+    <header class="p-6 max-w-6xl mx-auto w-full flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🧸</span>
+            <span class="text-xl font-bold text-slate-900 tracking-tight">Plushify</span>
+        </div>
+        <span class="text-sm font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full">Coming Soon</span>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-6 py-12 text-center flex-grow flex flex-col items-center justify-center">
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
+            Turn your photos into <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">squishy plushies</span>.
+        </h1>
+        <p class="text-lg md:text-xl text-slate-600 max-w-2xl mb-8 leading-relaxed">
+            Upload any selfie, pet picture, or memory, and create your personalized plushie avatar in seconds.
+        </p>
+
+        <!-- Waitlist Form (Formspree Integration Ready) -->
+        <form action="https://formspree.io/f/your_form_id" method="POST" class="w-full max-w-md flex flex-col sm:flex-row gap-3 mb-12">
+            <input 
+                type="email" 
+                name="email" 
+                placeholder="Enter your email address" 
+                required 
+                class="flex-grow px-5 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm"
+            >
+            <button 
+                type="submit" 
+                class="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-md shadow-purple-200"
+            >
+                Join Waitlist
+            </button>
+        </form>
+
+        <!-- Feature / Preview Card -->
+        <div class="bg-white p-4 rounded-2xl shadow-xl border border-slate-100 max-w-sm w-full">
+            <div class="bg-slate-100 rounded-xl overflow-hidden aspect-square flex items-center justify-center text-slate-400">
+                <!-- Replace with your generated plushie image URL -->
+                <p class="p-6 text-sm">✨ Upload photo ➔ Get custom squishy plushie avatar ✨</p>
+            </div>
+            <div class="mt-4 text-left px-2">
+                <p class="font-bold text-slate-900 text-sm">Custom Plushie Renders</p>
+                <p class="text-xs text-slate-500 mt-1">Soft fleece, custom accessories, and cute marshmallow styling.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-6 text-center text-xs text-slate-400">
+        &copy; 2026 Plushify. All rights reserved.
+    </footer>
+
+</body>
+</html>
