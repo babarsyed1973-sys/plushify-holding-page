@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plushify — Create Your Plushie Avatar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="p-5 max-w-7xl mx-auto w-full flex justify-between items-center border-b border-slate-200 bg-white">
+        <a href="index.html" class="flex items-center space-x-2">
+            <span class="text-2xl">🧸</span>
+            <span class="text-xl font-extrabold tracking-tight text-slate-900">Plushify</span>
+        </a>
+        <div class="flex items-center space-x-4">
+            <span class="text-xs font-semibold text-purple-700 bg-purple-100 px-3 py-1 rounded-full">Studio Alpha</span>
+        </div>
+    </header>
+
+    <!-- Main Studio Workspace -->
+    <main class="max-w-7xl mx-auto w-full px-6 py-8 flex-grow grid lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Controls & Inputs (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- 1. Photo Upload Zone -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <span>📸</span> 1. Upload Reference Photo
+                </h2>
+                <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-purple-500 transition-colors rounded-xl p-8 text-center cursor-pointer bg-slate-50/50">
+                    <input type="file" id="photo-input" accept="image/*" class="hidden">
+                    <div id="upload-prompt">
+                        <div class="text-4xl mb-2">📥</div>
+                        <p class="font-semibold text-slate-700 text-sm">Click to upload or drag & drop a photo</p>
+                        <p class="text-xs text-slate-400 mt-1">PNG, JPG, or WEBP up to 10MB</p>
+                    </div>
+                    <div id="preview-container" class="hidden flex items-center justify-center gap-4">
+                        <img id="image-preview" src="" alt="Uploaded preview" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-left">
+                            <p id="file-name" class="text-sm font-bold text-slate-800"></p>
+                            <button id="remove-photo" type="button" class="text-xs text-red-500 font-semibold hover:underline mt-1">Remove photo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Fine-Tune Details -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>🎨</span> 2. Fine-Tune Details
+                </h2>
+
+                <!-- Skin Tone Swatches -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Skin Tone</label>
+                    <div class="flex gap-3 flex-wrap" id="skin-swatches">
+                        <button type="button" data-skin="fair" class="w-8 h-8 rounded-full bg-[#FFE0D1] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                        <button type="button" data-skin="medium-fair" class="w-8 h-8 rounded-full bg-[#F3C5A5] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                        <button type="button" data-skin="tan" class="w-8 h-8 rounded-full bg-[#D19B74] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                        <button type="button" data-skin="deep-tan" class="w-8 h-8 rounded-full bg-[#8D5531] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                        <button type="button" data-skin="rich-dark" class="w-8 h-8 rounded-full bg-[#4A2B18] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                    </div>
+                </div>
+
+                <!-- Features & Accessories Checkboxes -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Features & Accessories</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
+                            <input type="checkbox" id="feature-beard" class="rounded text-purple-600"> Beard / Stubble
+                        </label>
+                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
+                            <input type="checkbox" id="feature-sunglasses" class="rounded text-purple-600"> Sunglasses
+                        </label>
+                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
+                            <input type="checkbox" id="feature-glasses" class="rounded text-purple-600"> Glasses
+                        </label>
+                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
+                            <input type="checkbox" id="feature-birthmark" class="rounded text-purple-600"> Facial Birthmark
+                        </label>
+                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
+                            <input type="checkbox" id="feature-watch" class="rounded text-purple-600"> Wristwatch
+                        </label>
+                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
+                            <input type="checkbox" id="feature-earrings" class="rounded text-purple-600"> Earrings
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Material & Texture -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Plushie Material</label>
+                    <select id="material-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="fleece">Ultra-Soft Fleece (Classic Marshmallow)</option>
+                        <option value="crochet">Crochet / Knitted</option>
+                        <option value="velvet">Velvet Plush</option>
+                        <option value="sherpa">Sherpa Faux Fur</option>
+                    </select>
+                </div>
+
+                <!-- Scene / Background -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Setting / Background</label>
+                    <select id="scene-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="poolside">Poolside Sunbed</option>
+                        <option value="beach">Tropical Beach Sunset</option>
+                        <option value="bedroom">Cozy Bedroom Shelf</option>
+                        <option value="studio">Minimalist Studio (Solid Color)</option>
+                    </select>
+                </div>
+
+                <!-- Custom Prompt Notes -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Special Details (Optional)</label>
+                    <textarea id="custom-notes" rows="2" placeholder="e.g. Include an orange t-shirt with a small logo, black shorts..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                </div>
+
+                <!-- Generate Action Button -->
+                <button id="generate-btn" type="button" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-purple-200 transition-all text-center flex items-center justify-center gap-2">
+                    <span>✨</span> Generate Plushie Avatar
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Column: Render Preview Canvas (5 cols) -->
+        <div class="lg:col-span-5 flex flex-col justify-start">
+            <div class="sticky top-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Live Preview Output</h3>
+                
+                <div id="output-canvas" class="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200 overflow-hidden relative">
+                    <div id="placeholder-state" class="p-6 text-slate-400 text-center">
+                        <div class="text-5xl mb-3">🧸</div>
+                        <p class="text-sm font-medium">Your generated plushie render will appear here.</p>
+                    </div>
+                    <div id="loading-state" class="hidden p-6 text-purple-600 text-center">
+                        <div class="animate-spin text-4xl mb-3">🌀</div>
+                        <p class="text-sm font-bold">Stitching your plushie...</p>
+                        <p class="text-xs text-slate-400 mt-1">This usually takes ~10 seconds</p>
+                    </div>
+                    <img id="result-image" src="" alt="Generated Plushie" class="hidden w-full h-full object-cover">
+                </div>
+
+                <div id="action-buttons" class="hidden mt-4 grid grid-cols-2 gap-3">
+                    <a id="download-link" href="#" download="plushie.png" class="bg-slate-900 text-white text-xs font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors">Download HD</a>
+                    <button id="share-btn" class="bg-purple-100 text-purple-700 text-xs font-bold py-3 rounded-xl hover:bg-purple-200 transition-colors">Share Avatar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Basic JS for UI interaction -->
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const photoInput = document.getElementById('photo-input');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const fileName = document.getElementById('file-name');
+        const removePhoto = document.getElementById('remove-photo');
+
+        dropZone.addEventListener('click', () => photoInput.click());
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                    fileName.textContent = file.name;
+                    uploadPrompt.classList.add('hidden');
+                    previewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removePhoto.addEventListener('click', (e) => {
+            e.stopPropagation();
+            photoInput.value = '';
+            uploadPrompt.classList.remove('hidden');
+            previewContainer.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
