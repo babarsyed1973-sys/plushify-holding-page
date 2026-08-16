@@ -6,7 +6,18 @@ export default async function handler(req, res) {
     try {
         const { imageBase64, skinTone, features, material, scene, customNotes } = req.body;
 
-        // Construct structured prompt
+        const token = process.env.REPLICATE_API_TOKEN;
+
+        if (!token) {
+            return res.status(500).json({ error: 'REPLICATE_API_TOKEN is missing in Vercel environment variables.' });
+        }
+
+        // Format token cleanly (handles if user pasted 'r8_...' or 'Bearer r8_...')
+        const authHeader = token.startsWith('Token ') || token.startsWith('Bearer ') 
+            ? token 
+            : `Token ${token}`;
+
+        // Construct prompt
         let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie avatar. `;
         prompt += `Made of ${material || 'ultra-soft fleece'} material. `;
         prompt += `Skin tone: ${skinTone || 'medium'}. `;
@@ -22,11 +33,11 @@ export default async function handler(req, res) {
             prompt += `Additional detail: ${customNotes}. `;
         }
 
-        // 1. Start the prediction job on Replicate
+        // 1. Start prediction on Replicate
         const startResponse = await fetch("https://api.replicate.com/v1/predictions", {
             method: "POST",
             headers: {
-                "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}`,
+                "Authorization": authHeader,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -38,17 +49,17 @@ export default async function handler(req, res) {
         let prediction = await startResponse.json();
 
         if (startResponse.status !== 201) {
-            return res.status(500).json({ error: prediction.detail || 'Failed to start image generation on Replicate.' });
+            return res.status(500).json({ error: prediction.detail || 'Failed to authenticate or start prediction on Replicate.' });
         }
 
-        // 2. Poll the prediction URL until the image generation completes
+        // 2. Poll prediction URL
         const pollUrl = prediction.urls.get;
 
         while (prediction.status !== "succeeded" && prediction.status !== "failed") {
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             const checkResponse = await fetch(pollUrl, {
                 headers: {
-                    "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}`,
+                    "Authorization": authHeader,
                     "Content-Type": "application/json",
                 },
             });
@@ -59,11 +70,10 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: "Replicate image generation task failed." });
         }
 
-        // 3. Return the completed output image URL
         const imageUrl = prediction.output ? prediction.output[0] : null;
 
         if (!imageUrl) {
-            return res.status(500).json({ error: "No image output generated." });
+            return res.status(500).json({ error: "No image output returned." });
         }
 
         return res.status(200).json({
