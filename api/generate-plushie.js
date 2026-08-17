@@ -6,18 +6,17 @@ export default async function handler(req, res) {
     try {
         const { imageBase64, skinTone, features, material, scene, customNotes } = req.body;
 
-        const token = process.env.REPLICATE_API_TOKEN;
+        const rawToken = process.env.REPLICATE_API_TOKEN ? process.env.REPLICATE_API_TOKEN.trim() : '';
 
-        if (!token) {
+        if (!rawToken) {
             return res.status(500).json({ error: 'REPLICATE_API_TOKEN is missing in Vercel environment variables.' });
         }
 
-        // Format token cleanly (handles if user pasted 'r8_...' or 'Bearer r8_...')
-        const authHeader = token.startsWith('Token ') || token.startsWith('Bearer ') 
-            ? token 
-            : `Token ${token}`;
+        const authHeader = rawToken.startsWith('Bearer ') || rawToken.startsWith('Token ')
+            ? rawToken
+            : `Bearer ${rawToken}`;
 
-        // Construct prompt
+        // Construct structured prompt
         let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie avatar. `;
         prompt += `Made of ${material || 'ultra-soft fleece'} material. `;
         prompt += `Skin tone: ${skinTone || 'medium'}. `;
@@ -33,7 +32,7 @@ export default async function handler(req, res) {
             prompt += `Additional detail: ${customNotes}. `;
         }
 
-        // 1. Start prediction on Replicate
+        // 1. Start prediction on Replicate using the official SDXL version
         const startResponse = await fetch("https://api.replicate.com/v1/predictions", {
             method: "POST",
             headers: {
@@ -42,17 +41,23 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
                 version: "39ed52f2a78e93338771e87210772f050c06f459be2acb450b5b2d7e53b70c08",
-                input: { prompt: prompt }
+                input: { 
+                    prompt: prompt,
+                    scheduler: "K_EULER",
+                    num_outputs: 1,
+                    guidance_scale: 7.5,
+                    num_inference_steps: 25
+                }
             })
         });
 
         let prediction = await startResponse.json();
 
         if (startResponse.status !== 201) {
-            return res.status(500).json({ error: prediction.detail || 'Failed to authenticate or start prediction on Replicate.' });
+            return res.status(500).json({ error: prediction.detail || 'Failed to start prediction on Replicate.' });
         }
 
-        // 2. Poll prediction URL
+        // 2. Poll prediction URL until finished
         const pollUrl = prediction.urls.get;
 
         while (prediction.status !== "succeeded" && prediction.status !== "failed") {
