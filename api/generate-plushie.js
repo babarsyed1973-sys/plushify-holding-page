@@ -20,32 +20,34 @@ export default async function handler(req, res) {
             auth: apiToken,
         });
 
-        // Construct plushie prompt
-        let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie avatar toy. `;
-        prompt += `Made of ${material || 'ultra-soft fleece'} material. `;
+        // Enhanced macro photography & studio prompt for Imagen-style plushie detail
+        let prompt = `A soft, cute 3D squishy plushie doll avatar of a character, professional studio lighting, macro photography. `;
+        prompt += `Crafted from premium ultra-soft ${material || 'fleece'} and felt fabric, visible plush fabric fuzz and realistic texture, fine embroidered thread details along the seams. `;
         prompt += `Skin tone: ${skinTone || 'medium'}. `;
         
         if (features && Array.isArray(features) && features.length > 0) {
-            prompt += `Features: ${features.join(', ')}. `;
+            prompt += `Key facial and accessory details: ${features.join(', ')}. `;
         }
         
-        prompt += `Simple embroidered dot eyes and a tiny stitched smile. `;
-        prompt += `Setting: ${scene || 'minimalist studio'}. `;
+        prompt += `Large adorable embroidered button/dot eyes, a tiny stitched mouth, cute marshmallow proportions. `;
+        prompt += `Set against a clean, soft-focus background in a ${scene || 'minimalist studio'}, beautifully lit with warm ambient light, depth of field, 8k resolution, product photography style. `;
         
         if (customNotes) {
-            prompt += `Additional detail: ${customNotes}. `;
+            prompt += `Additional styling details: ${customNotes}. `;
         }
 
-        // Run Flux-schnell (no 64-char hash needed!)
+        // Run Flux Dev via Replicate SDK
         const output = await replicate.run(
-            "black-forest-labs/flux-schnell",
+            "black-forest-labs/flux-dev",
             {
                 input: {
                     prompt: prompt,
                     num_outputs: 1,
                     aspect_ratio: "1:1",
                     output_format: "webp",
-                    output_quality: 80
+                    output_quality: 95,
+                    guidance_scale: 3.5,
+                    num_inference_steps: 28
                 }
             }
         );
