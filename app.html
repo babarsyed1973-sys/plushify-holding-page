@@ -3,276 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plushify — Create Your Plushie Avatar</title>
+    <title>Plushify - Generate Your Custom Plushie Avatar</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .loader {
+            border-top-color: #3B82F6;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col items-center p-4 sm:p-8">
 
-    <!-- Header -->
-    <header class="p-5 max-w-7xl mx-auto w-full flex justify-between items-center border-b border-slate-200 bg-white">
-        <a href="index.html" class="flex items-center space-x-2">
-            <span class="text-2xl">🧸</span>
-            <span class="text-xl font-extrabold tracking-tight text-slate-900">Plushify</span>
-        </a>
-        <div class="flex items-center space-x-4">
-            <span class="text-xs font-semibold text-purple-700 bg-purple-100 px-3 py-1 rounded-full">Studio Alpha</span>
-        </div>
-    </header>
+    <div class="max-w-4xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 sm:p-10 my-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
+                ✨ Plushify Avatar Generator
+            </h1>
+            <p class="text-slate-400 mt-2 text-sm sm:text-base">
+                Upload a photo or configure your options to turn anyone into a squishy plushie avatar.
+            </p>
+        </header>
 
-    <!-- Main Studio Workspace -->
-    <main class="max-w-7xl mx-auto w-full px-6 py-8 flex-grow grid lg:grid-cols-12 gap-8">
-        
-        <!-- Left Column: Controls & Inputs (7 cols) -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- 1. Photo Upload Zone -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <span>📸</span> 1. Upload Reference Photo
-                </h2>
-                <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-purple-500 transition-colors rounded-xl p-8 text-center cursor-pointer bg-slate-50/50">
-                    <input type="file" id="photo-input" accept="image/*" class="hidden">
-                    <div id="upload-prompt">
-                        <div class="text-4xl mb-2">📥</div>
-                        <p class="font-semibold text-slate-700 text-sm">Click to upload or drag & drop a photo</p>
-                        <p class="text-xs text-slate-400 mt-1">PNG, JPG, or WEBP up to 10MB</p>
-                    </div>
-                    <div id="preview-container" class="hidden flex items-center justify-center gap-4">
-                        <img id="image-preview" src="" alt="Uploaded preview" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shadow-sm">
-                        <div class="text-left">
-                            <p id="file-name" class="text-sm font-bold text-slate-800"></p>
-                            <button id="remove-photo" type="button" class="text-xs text-red-500 font-semibold hover:underline mt-1">Remove photo</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Fine-Tune Details -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <span>🎨</span> 2. Fine-Tune Details
-                </h2>
-
-                <!-- Skin Tone Swatches -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Form Controls -->
+            <form id="plushieForm" class="space-y-5">
+                <!-- Image Upload -->
                 <div>
-                    <label for="skinTone" class="block font-medium mb-1">Skin Tone / Fabric Dye</label>
-<select id="skinTone" class="w-full p-2 border rounded-md mb-4">
-    <option value="fair pale Caucasian">Fair / Light (Pale)</option>
-    <option value="medium Caucasian light beige">Light / Beige</option>
-    <option value="warm tan olive">Olive / Warm Tan</option>
-    <option value="medium brown caramel">Caramel / Medium Brown</option>
-    <option value="deep rich brown">Deep Brown</option>
-    <option value="dark black espresso">Dark / Espresso (Black)</option>
-</select>
-                    </div>
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">1. Reference Photo (Optional)</label>
+                    <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-900 rounded-lg border border-slate-700 p-1">
                 </div>
 
-                <!-- Features & Accessories Checkboxes -->
+                <!-- Expanded Skin Tone / Fabric Dye -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Features & Accessories</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="feature-beard" class="rounded text-purple-600"> Beard / Stubble
-                        </label>
-                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="feature-sunglasses" class="rounded text-purple-600"> Sunglasses
-                        </label>
-                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="feature-glasses" class="rounded text-purple-600"> Glasses
-                        </label>
-                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="feature-birthmark" class="rounded text-purple-600"> Facial Birthmark
-                        </label>
-                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="feature-watch" class="rounded text-purple-600"> Wristwatch
-                        </label>
-                        <label class="flex items-center gap-2 text-sm bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer">
-                            <input type="checkbox" id="feature-earrings" class="rounded text-purple-600"> Earrings
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Material & Texture -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Plushie Material</label>
-                    <select id="material-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="ultra-soft fleece">Ultra-Soft Fleece (Classic Marshmallow)</option>
-                        <option value="crochet and knitted wool">Crochet / Knitted</option>
-                        <option value="velvet plush">Velvet Plush</option>
-                        <option value="sherpa faux fur">Sherpa Faux Fur</option>
+                    <label for="skinTone" class="block text-sm font-semibold text-slate-300 mb-2">2. Skin Tone / Fabric Dye</label>
+                    <select id="skinTone" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="fair pale Caucasian">Fair / Light (Pale)</option>
+                        <option value="medium Caucasian light beige">Light / Beige</option>
+                        <option value="warm tan olive">Olive / Warm Tan</option>
+                        <option value="medium brown caramel" selected>Caramel / Medium Brown</option>
+                        <option value="deep rich brown">Deep Brown</option>
+                        <option value="dark black espresso">Dark / Espresso (Black)</option>
                     </select>
                 </div>
 
-                <!-- Scene / Background -->
+                <!-- Material Type -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Setting / Background</label>
-                    <select id="scene-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="poolside sunbed">Poolside Sunbed</option>
-                        <option value="tropical beach sunset">Tropical Beach Sunset</option>
+                    <label for="material" class="block text-sm font-semibold text-slate-300 mb-2">3. Plushie Material</label>
+                    <select id="material" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="ultra-soft fleece" selected>Ultra-Soft Fleece</option>
+                        <option value="fluffy faux fur">Fluffy Faux Fur</option>
+                        <option value="velvet felt fabric">Velvet / Felt Fabric</option>
+                        <option value="knit yarn wool">Knit Yarn / Wool</option>
+                    </select>
+                </div>
+
+                <!-- Features Checkboxes -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">4. Key Features</label>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-slate-300 bg-slate-900 p-3 rounded-lg border border-slate-700">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="features" value="glasses" class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500">
+                            <span>Glasses</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="features" value="beard and mustache" class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500">
+                            <span>Beard / Facial Hair</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="features" value="curly hair" class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500">
+                            <span>Curly Hair</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="features" value="beanie hat" class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500">
+                            <span>Beanie Hat</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Background Scene -->
+                <div>
+                    <label for="scene" class="block text-sm font-semibold text-slate-300 mb-2">5. Setting / Background</label>
+                    <select id="scene" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="minimalist studio" selected>Minimalist Studio</option>
                         <option value="cozy bedroom shelf">Cozy Bedroom Shelf</option>
-                        <option value="minimalist studio soft gradient">Minimalist Studio (Solid Color)</option>
+                        <option value="soft pastel studio background">Soft Pastel Backdrop</option>
+                        <option value="wooden desk setup">Wooden Desk Setup</option>
                     </select>
                 </div>
 
-                <!-- Custom Prompt Notes -->
+                <!-- Custom Notes -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Special Details (Optional)</label>
-                    <textarea id="custom-notes" rows="2" placeholder="e.g. Include an orange t-shirt with a small logo, black shorts..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                    <label for="customNotes" class="block text-sm font-semibold text-slate-300 mb-2">6. Custom Styling Details (Optional)</label>
+                    <textarea id="customNotes" rows="2" placeholder="e.g. wearing a blue hoodie, green eyes, holding a coffee cup..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-500"></textarea>
                 </div>
 
-                <!-- Generate Action Button -->
-                <button id="generate-btn" type="button" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-purple-200 transition-all text-center flex items-center justify-center gap-2">
-                    <span>✨</span> Generate Plushie Avatar
+                <!-- Submit Button -->
+                <button type="submit" id="generateBtn" class="w-full py-3.5 px-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transition transform active:scale-98 flex justify-center items-center gap-2">
+                    <span>✨ Generate Plushie Avatar</span>
                 </button>
-            </div>
-        </div>
+            </form>
 
-        <!-- Right Column: Render Preview Canvas (5 cols) -->
-        <div class="lg:col-span-5 flex flex-col justify-start">
-            <div class="sticky top-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Live Preview Output</h3>
-                
-                <div id="output-canvas" class="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200 overflow-hidden relative">
-                    <div id="placeholder-state" class="p-6 text-slate-400 text-center">
-                        <div class="text-5xl mb-3">🧸</div>
-                        <p class="text-sm font-medium">Your generated plushie render will appear here.</p>
-                    </div>
-                    <div id="loading-state" class="hidden p-6 text-purple-600 text-center">
-                        <div class="animate-spin text-4xl mb-3">🌀</div>
-                        <p class="text-sm font-bold">Stitching your plushie...</p>
-                        <p class="text-xs text-slate-400 mt-1">This usually takes ~10-15 seconds</p>
-                    </div>
-                    <img id="result-image" src="" alt="Generated Plushie" class="hidden w-full h-full object-cover">
+            <!-- Preview Output Area -->
+            <div class="flex flex-col items-center justify-center bg-slate-900 rounded-xl border border-slate-700 p-6 relative min-h-[350px]">
+                <!-- Placeholder / Loading State -->
+                <div id="loadingState" class="hidden flex-col items-center space-y-3 text-center">
+                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-700 h-12 w-12"></div>
+                    <p class="text-sm font-medium text-slate-300">Crafting your custom plushie render...</p>
+                    <p class="text-xs text-slate-500">Powered by Flux Dev (takes ~10–12s)</p>
                 </div>
 
-                <div id="action-buttons" class="hidden mt-4 grid grid-cols-2 gap-3">
-                    <a id="download-link" href="#" download="plushie.png" target="_blank" class="bg-slate-900 text-white text-xs font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center gap-1">
-                        Download HD
-                    </a>
-                    <button id="share-btn" type="button" class="bg-purple-100 text-purple-700 text-xs font-bold py-3 rounded-xl hover:bg-purple-200 transition-colors">
-                        Share Avatar
-                    </button>
+                <div id="placeholderState" class="text-center text-slate-500">
+                    <svg class="mx-auto h-16 w-16 mb-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-sm">Your generated plushie avatar will appear here</p>
                 </div>
+
+                <!-- Result Image -->
+                <img id="resultImage" src="" alt="Plushie Avatar" class="hidden w-full h-auto max-h-[450px] object-contain rounded-lg shadow-md border border-slate-700">
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Interactive Script -->
+    <!-- Script to handle payload & form submission -->
     <script>
-        const dropZone = document.getElementById('drop-zone');
-        const photoInput = document.getElementById('photo-input');
-        const uploadPrompt = document.getElementById('upload-prompt');
-        const previewContainer = document.getElementById('preview-container');
-        const imagePreview = document.getElementById('image-preview');
-        const fileName = document.getElementById('file-name');
-        const removePhoto = document.getElementById('remove-photo');
-        const generateBtn = document.getElementById('generate-btn');
+        document.getElementById('plushieForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        const placeholderState = document.getElementById('placeholder-state');
-        const loadingState = document.getElementById('loading-state');
-        const resultImage = document.getElementById('result-image');
-        const actionButtons = document.getElementById('action-buttons');
-        const downloadLink = document.getElementById('download-link');
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingState = document.getElementById('loadingState');
+            const placeholderState = document.getElementById('placeholderState');
+            const resultImage = document.getElementById('resultImage');
 
-        let base64Image = null;
-        let selectedSkinTone = 'medium-fair';
+            // Gather inputs
+            const skinTone = document.getElementById('skinTone').value;
+            const material = document.getElementById('material').value;
+            const scene = document.getElementById('scene').value;
+            const customNotes = document.getElementById('customNotes').value;
 
-        // Drag & Drop / Click Upload Logic
-        dropZone.addEventListener('click', () => photoInput.click());
-
-        photoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    base64Image = event.target.result;
-                    imagePreview.src = base64Image;
-                    fileName.textContent = file.name;
-                    uploadPrompt.classList.add('hidden');
-                    previewContainer.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        removePhoto.addEventListener('click', (e) => {
-            e.stopPropagation();
-            photoInput.value = '';
-            base64Image = null;
-            uploadPrompt.classList.remove('hidden');
-            previewContainer.classList.add('hidden');
-        });
-
-        // Skin Tone Selector
-        document.querySelectorAll('#skin-swatches button').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('#skin-swatches button').forEach(b => b.classList.remove('ring-4', 'ring-purple-500'));
-                e.currentTarget.classList.add('ring-4', 'ring-purple-500');
-                selectedSkinTone = e.currentTarget.getAttribute('data-skin');
+            // Gather feature checkboxes
+            const selectedFeatures = [];
+            document.querySelectorAll('input[name="features"]:checked').forEach(cb => {
+                selectedFeatures.push(cb.value);
             });
-        });
 
-        // Generate Plushie Button Event Handler
-        generateBtn.addEventListener('click', async () => {
-            if (!base64Image) {
-                alert('Please upload a reference photo first!');
-                return;
+            // Convert photo to base64 if selected
+            const imageInput = document.getElementById('imageInput');
+            let imageBase64 = null;
+            if (imageInput.files && imageInput.files[0]) {
+                const file = imageInput.files[0];
+                imageBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
             }
 
-            const features = [];
-            if (document.getElementById('feature-beard')?.checked) features.push('full beard / stubble');
-            if (document.getElementById('feature-sunglasses')?.checked) features.push('stylish sunglasses');
-            if (document.getElementById('feature-glasses')?.checked) features.push('prescription glasses');
-            if (document.getElementById('feature-birthmark')?.checked) features.push('facial birthmark');
-            if (document.getElementById('feature-watch')?.checked) features.push('wristwatch');
-            if (document.getElementById('feature-earrings')?.checked) features.push('earrings');
-
-            const payload = {
-                imageBase64: base64Image,
-                skinTone: selectedSkinTone,
-                features: features,
-                material: document.getElementById('material-select')?.value,
-                scene: document.getElementById('scene-select')?.value,
-                customNotes: document.getElementById('custom-notes')?.value
-            };
-
-            // Switch to loading UI state
+            // UI loading transition
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
             placeholderState.classList.add('hidden');
             resultImage.classList.add('hidden');
-            actionButtons.classList.add('hidden');
             loadingState.classList.remove('hidden');
-            generateBtn.disabled = true;
+            loadingState.classList.add('flex');
 
             try {
                 const response = await fetch('/api/generate-plushie', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        imageBase64: imageBase64,
+                        skinTone: skinTone,
+                        features: selectedFeatures,
+                        material: material,
+                        scene: scene,
+                        customNotes: customNotes
+                    })
                 });
 
                 const data = await response.json();
 
-                if (data.success && data.imageUrl) {
-                    resultImage.src = data.imageUrl;
-                    downloadLink.href = data.imageUrl;
-                    loadingState.classList.add('hidden');
-                    resultImage.classList.remove('hidden');
-                    actionButtons.classList.remove('hidden');
-                } else {
-                    throw new Error(data.error || 'API returned an empty result.');
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to generate plushie avatar.');
                 }
+
+                // Show result image
+                resultImage.src = data.imageUrl;
+                resultImage.classList.remove('hidden');
+
             } catch (err) {
-                alert('Generation Error: ' + err.message);
-                console.error('Plushify Error:', err);
-                loadingState.classList.add('hidden');
+                alert(`Generation Error: ${err.message}`);
                 placeholderState.classList.remove('hidden');
             } finally {
+                loadingState.classList.add('hidden');
+                loadingState.classList.remove('flex');
                 generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         });
     </script>
