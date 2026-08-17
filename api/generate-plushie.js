@@ -16,7 +16,7 @@ export default async function handler(req, res) {
             ? rawToken
             : `Bearer ${rawToken}`;
 
-        // Construct structured prompt
+        // Build structured prompt
         let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie avatar. `;
         prompt += `Made of ${material || 'ultra-soft fleece'} material. `;
         prompt += `Skin tone: ${skinTone || 'medium'}. `;
@@ -32,15 +32,14 @@ export default async function handler(req, res) {
             prompt += `Additional detail: ${customNotes}. `;
         }
 
-        // 1. Start prediction on Replicate using the official SDXL version
-        const startResponse = await fetch("https://api.replicate.com/v1/predictions", {
+        // Call the model route directly (no version string needed)
+        const startResponse = await fetch("https://api.replicate.com/v1/models/stability-ai/sdxl/predictions", {
             method: "POST",
             headers: {
                 "Authorization": authHeader,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                version: "39ed52f2a78e93338771e87210772f050c06f459be2acb450b5b2d7e53b70c08",
                 input: { 
                     prompt: prompt,
                     scheduler: "K_EULER",
@@ -53,11 +52,11 @@ export default async function handler(req, res) {
 
         let prediction = await startResponse.json();
 
-        if (startResponse.status !== 201) {
+        if (startResponse.status !== 201 && startResponse.status !== 200) {
             return res.status(500).json({ error: prediction.detail || 'Failed to start prediction on Replicate.' });
         }
 
-        // 2. Poll prediction URL until finished
+        // Poll prediction URL until finished
         const pollUrl = prediction.urls.get;
 
         while (prediction.status !== "succeeded" && prediction.status !== "failed") {
