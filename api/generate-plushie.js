@@ -21,22 +21,25 @@ export default async function handler(req, res) {
         });
 
         const selectedSkinTone = skinTone || 'medium caramel brown skin tone';
+        const selectedScene = scene || 'messy, cosy unmade bed surrounded by warm fairy lights';
+        const selectedMaterial = material || 'ultra-soft fleece';
 
-        // Prompt tailored for transforming person into plushie format
-        let prompt = `A custom squishy 3D plushie stuffed toy doll transformed from the reference person, soft fleece fabric texture, macro photograph. `;
-        prompt += `The plushie doll features a ${selectedSkinTone} fabric face. `;
-        prompt += `Crafted from high quality ${material || 'ultra-soft fleece'} with visible stitched seams and soft fabric fuzz. `;
+        // Strict design requirement prompt logic
+        let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie stuffed toy doll. `;
+        prompt += `Pastel ${selectedMaterial} version of full outfit, accessories, and hairstyle. `;
+        prompt += `Plushie face is made of ${selectedSkinTone} fleece fabric. `;
+        prompt += `Simple embroidered dot eyes and a tiny stitched smile. `;
 
         if (features && Array.isArray(features) && features.length > 0) {
-            prompt += `Key facial traits and accessories: ${features.join(', ')}. `;
+            prompt += `Features: ${features.join(', ')}. `;
         }
-
-        prompt += `Chubby marshmallow proportions, cute embroidered dot eyes, tiny stitched mouth, sitting comfortably in a ${scene || 'minimalist studio backdrop'}. `;
-        prompt += `Warm ambient studio lighting, shallow depth of field, 8k resolution, product macro photography. `;
 
         if (customNotes) {
             prompt += `Outfit & extra details: ${customNotes}. `;
         }
+
+        prompt += `Plushie rests playfully on a ${selectedScene}. `;
+        prompt += `Warm ambient glow, shallow depth of field, soft fabric textures, macro plush toy product photography. `;
 
         // Configure input payload for Flux Dev
         const inputPayload = {
@@ -45,14 +48,14 @@ export default async function handler(req, res) {
             aspect_ratio: "1:1",
             output_format: "webp",
             output_quality: 95,
-            guidance_scale: 3.5,
-            num_inference_steps: 28
+            guidance_scale: 4.5,
+            num_inference_steps: 30
         };
 
-        // If reference image provided, pass it to preserve face/pose likeness
+        // If reference image provided, pass it with balanced strength so it keeps likeness without ruining plushie style
         if (imageBase64) {
             inputPayload.image = imageBase64;
-            inputPayload.prompt_strength = 0.65; // High fidelity to source image
+            inputPayload.prompt_strength = 0.48; // Preserves structure while forcing full plushie transformation
         }
 
         // Run Flux Dev
