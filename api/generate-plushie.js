@@ -20,10 +20,13 @@ export default async function handler(req, res) {
             auth: apiToken,
         });
 
-        // Enhanced macro photography & studio prompt for Imagen-style plushie detail
+        // Expanded, explicit skin tone mapping for plushie fabric
+        const selectedSkinTone = skinTone || 'medium brown caramel';
+
+        // High-fidelity prompt targeting plushie fabric textures and precise skin tones
         let prompt = `A soft, cute 3D squishy plushie doll avatar of a character, professional studio lighting, macro photography. `;
         prompt += `Crafted from premium ultra-soft ${material || 'fleece'} and felt fabric, visible plush fabric fuzz and realistic texture, fine embroidered thread details along the seams. `;
-        prompt += `Skin tone: ${skinTone || 'medium'}. `;
+        prompt += `The character's plushie face and skin fabric color is explicitly dyed a ${selectedSkinTone} tone. `;
         
         if (features && Array.isArray(features) && features.length > 0) {
             prompt += `Key facial and accessory details: ${features.join(', ')}. `;
@@ -52,7 +55,6 @@ export default async function handler(req, res) {
             }
         );
 
-        // Convert output stream or array to URL string
         let imageUrl = Array.isArray(output) ? output[0] : output;
         
         if (imageUrl && typeof imageUrl === 'object' && typeof imageUrl.url === 'function') {
