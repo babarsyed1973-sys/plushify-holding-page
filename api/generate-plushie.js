@@ -1,3 +1,5 @@
+import Replicate from "replicate";
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -12,16 +14,18 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'REPLICATE_API_TOKEN is missing in Vercel environment variables.' });
         }
 
-        const authHeader = rawToken.startsWith('Bearer ') || rawToken.startsWith('Token ')
-            ? rawToken
-            : `Bearer ${rawToken}`;
+        const apiToken = rawToken.replace(/^(Bearer|Token)\s+/i, '');
 
-        // Construct structured prompt
-        let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie avatar. `;
+        const replicate = new Replicate({
+            auth: apiToken,
+        });
+
+        // Construct plushie prompt
+        let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie avatar toy. `;
         prompt += `Made of ${material || 'ultra-soft fleece'} material. `;
         prompt += `Skin tone: ${skinTone || 'medium'}. `;
         
-        if (features && features.length > 0) {
+        if (features && Array.isArray(features) && features.length > 0) {
             prompt += `Features: ${features.join(', ')}. `;
         }
         
@@ -32,53 +36,33 @@ export default async function handler(req, res) {
             prompt += `Additional detail: ${customNotes}. `;
         }
 
-        // 1. Start prediction on Replicate using official SDXL version hash
-        const startResponse = await fetch("https://api.replicate.com/v1/predictions", {
-            method: "POST",
-            headers: {
-                "Authorization": authHeader,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                version: "770044d6f921d7237e163d42df79e8c4ee5901594e9f7cc8c3b429d2b270a4a8",
-                input: { 
+        // Run Flux-schnell (no 64-char hash needed!)
+        const output = await replicate.run(
+            "black-forest-labs/flux-schnell",
+            {
+                input: {
                     prompt: prompt,
-                    scheduler: "K_EULER",
                     num_outputs: 1,
-                    guidance_scale: 7.5,
-                    num_inference_steps: 25
+                    aspect_ratio: "1:1",
+                    output_format: "webp",
+                    output_quality: 80
                 }
-            })
-        });
+            }
+        );
 
-        let prediction = await startResponse.json();
-
-        if (startResponse.status !== 201 && startResponse.status !== 200) {
-            return res.status(500).json({ error: prediction.detail || 'Failed to start prediction on Replicate.' });
+        // Convert output stream or array to URL string
+        let imageUrl = Array.isArray(output) ? output[0] : output;
+        
+        if (imageUrl && typeof imageUrl === 'object' && typeof imageUrl.url === 'function') {
+            imageUrl = imageUrl.url().href;
+        } else if (imageUrl && typeof imageUrl === 'object' && imageUrl.href) {
+            imageUrl = imageUrl.href;
+        } else {
+            imageUrl = String(imageUrl);
         }
-
-        // 2. Poll prediction URL until finished
-        const pollUrl = prediction.urls.get;
-
-        while (prediction.status !== "succeeded" && prediction.status !== "failed") {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            const checkResponse = await fetch(pollUrl, {
-                headers: {
-                    "Authorization": authHeader,
-                    "Content-Type": "application/json",
-                },
-            });
-            prediction = await checkResponse.json();
-        }
-
-        if (prediction.status === "failed") {
-            return res.status(500).json({ error: "Replicate image generation task failed." });
-        }
-
-        const imageUrl = prediction.output ? prediction.output[0] : null;
 
         if (!imageUrl) {
-            return res.status(500).json({ error: "No image output returned." });
+            return res.status(500).json({ error: "No image output returned from Replicate." });
         }
 
         return res.status(200).json({
