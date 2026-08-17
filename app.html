@@ -60,13 +60,15 @@
 
                 <!-- Skin Tone Swatches -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Skin Tone</label>
-                    <div class="flex gap-3 flex-wrap" id="skin-swatches">
-                        <button type="button" data-skin="fair" class="w-8 h-8 rounded-full bg-[#FFE0D1] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
-                        <button type="button" data-skin="medium-fair" class="w-8 h-8 rounded-full bg-[#F3C5A5] border-2 border-transparent focus:border-purple-600 ring-4 ring-purple-500 shadow-sm"></button>
-                        <button type="button" data-skin="tan" class="w-8 h-8 rounded-full bg-[#D19B74] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
-                        <button type="button" data-skin="deep-tan" class="w-8 h-8 rounded-full bg-[#8D5531] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
-                        <button type="button" data-skin="rich-dark" class="w-8 h-8 rounded-full bg-[#4A2B18] border-2 border-transparent focus:border-purple-600 shadow-sm"></button>
+                    <label for="skinTone" class="block font-medium mb-1">Skin Tone / Fabric Dye</label>
+<select id="skinTone" class="w-full p-2 border rounded-md mb-4">
+    <option value="fair pale Caucasian">Fair / Light (Pale)</option>
+    <option value="medium Caucasian light beige">Light / Beige</option>
+    <option value="warm tan olive">Olive / Warm Tan</option>
+    <option value="medium brown caramel">Caramel / Medium Brown</option>
+    <option value="deep rich brown">Deep Brown</option>
+    <option value="dark black espresso">Dark / Espresso (Black)</option>
+</select>
                     </div>
                 </div>
 
