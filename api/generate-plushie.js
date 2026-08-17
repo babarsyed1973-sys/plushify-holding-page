@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { skinTone, features, material, scene, customNotes } = req.body;
+        const { imageBase64, skinTone, features, material, scene, customNotes } = req.body;
 
         const rawToken = process.env.REPLICATE_API_TOKEN ? process.env.REPLICATE_API_TOKEN.trim() : '';
 
@@ -16,46 +16,59 @@ export default async function handler(req, res) {
 
         const apiToken = rawToken.replace(/^(Bearer|Token)\s+/i, '');
 
-        const replicate = new Replicate({
-            auth: apiToken,
-        });
+        const replicate = new Replicate({ auth: apiToken });
 
-        const selectedSkinTone = skinTone || 'medium caramel brown skin tone';
+        // Map selection explicitly to color values
+        const skinToneMap = {
+            'fair pale Caucasian skin tone': 'light fair peach skin color',
+            'light beige Caucasian skin tone': 'light beige skin color',
+            'warm tan olive skin tone': 'warm olive tan skin color',
+            'medium caramel brown skin tone': 'caramel brown skin color',
+            'deep rich brown skin tone': 'deep rich dark brown skin color',
+            'dark black espresso skin tone': 'dark espresso black skin color'
+        };
+
+        const resolvedSkinTone = skinToneMap[skinTone] || skinTone || 'caramel brown skin color';
         const selectedScene = scene || 'messy, cosy unmade bed surrounded by warm fairy lights';
         const selectedMaterial = material || 'ultra-soft fleece';
 
-        // Core Plushify design prompt
-        let prompt = `A soft, cute 3D squishy plushie stuffed doll avatar of a character, macro photography. `;
-        prompt += `Ultra-soft, round, marshmallow-like giant squishy plushie proportion. `;
-        prompt += `Pastel ${selectedMaterial} version of full outfit, accessories and hairstyle. `;
-        prompt += `Plushie character face and head is made of dyed ${selectedSkinTone} fleece fabric. `;
+        // High-weight prompt structure
+        let prompt = `A soft, cute 3D squishy plushie doll avatar of the person in the reference photo. `;
+        prompt += `Ultra-soft, round, marshmallow-like giant squishy plushie proportions. `;
+        prompt += `Plushie head and skin fabric MUST be dyed ${resolvedSkinTone}. `;
+        prompt += `Made from pastel ${selectedMaterial} fabric, with soft fabric fuzz and visible embroidered stitching. `;
         prompt += `Simple embroidered dot eyes and a tiny stitched smile. `;
 
         if (features && Array.isArray(features) && features.length > 0) {
-            prompt += `Key plushie features: ${features.join(', ')}. `;
+            prompt += `Replicate exact facial features: ${features.join(', ')}. `;
         }
 
         if (customNotes) {
-            prompt += `Custom outfit & accessories: ${customNotes}. `;
+            prompt += `Outfit details matching photo: ${customNotes}. `;
         }
 
         prompt += `Plushie rests playfully on a ${selectedScene}. `;
-        prompt += `Warm ambient lighting, soft fabric fuzz texture, visible embroidered thread seams, 8k resolution, plush toy product photography. `;
+        prompt += `Warm fairy light ambient glow, product macro photograph, 8k resolution.`;
 
-        // Run Flux Dev without raw photo override
+        const inputPayload = {
+            prompt: prompt,
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 95,
+            guidance_scale: 5.5, // Stronger prompt adherence
+            num_inference_steps: 30
+        };
+
+        // Pass image if present with controlled image-to-image strength
+        if (imageBase64) {
+            inputPayload.image = imageBase64;
+            inputPayload.prompt_strength = 0.38; // Sweet spot between likeness & plushie transformation
+        }
+
         const output = await replicate.run(
             "black-forest-labs/flux-dev",
-            {
-                input: {
-                    prompt: prompt,
-                    num_outputs: 1,
-                    aspect_ratio: "1:1",
-                    output_format: "webp",
-                    output_quality: 95,
-                    guidance_scale: 4.5,
-                    num_inference_steps: 30
-                }
-            }
+            { input: inputPayload }
         );
 
         let imageUrl = Array.isArray(output) ? output[0] : output;
