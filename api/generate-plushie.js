@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { imageBase64, skinTone, features, material, scene, customNotes } = req.body;
+        const { skinTone, features, material, scene, customNotes } = req.body;
 
         const rawToken = process.env.REPLICATE_API_TOKEN ? process.env.REPLICATE_API_TOKEN.trim() : '';
 
@@ -24,44 +24,38 @@ export default async function handler(req, res) {
         const selectedScene = scene || 'messy, cosy unmade bed surrounded by warm fairy lights';
         const selectedMaterial = material || 'ultra-soft fleece';
 
-        // Strict design requirement prompt logic
-        let prompt = `Ultra-soft, round, marshmallow-like giant squishy plushie stuffed toy doll. `;
-        prompt += `Pastel ${selectedMaterial} version of full outfit, accessories, and hairstyle. `;
-        prompt += `Plushie face is made of ${selectedSkinTone} fleece fabric. `;
+        // Core Plushify design prompt
+        let prompt = `A soft, cute 3D squishy plushie stuffed doll avatar of a character, macro photography. `;
+        prompt += `Ultra-soft, round, marshmallow-like giant squishy plushie proportion. `;
+        prompt += `Pastel ${selectedMaterial} version of full outfit, accessories and hairstyle. `;
+        prompt += `Plushie character face and head is made of dyed ${selectedSkinTone} fleece fabric. `;
         prompt += `Simple embroidered dot eyes and a tiny stitched smile. `;
 
         if (features && Array.isArray(features) && features.length > 0) {
-            prompt += `Features: ${features.join(', ')}. `;
+            prompt += `Key plushie features: ${features.join(', ')}. `;
         }
 
         if (customNotes) {
-            prompt += `Outfit & extra details: ${customNotes}. `;
+            prompt += `Custom outfit & accessories: ${customNotes}. `;
         }
 
         prompt += `Plushie rests playfully on a ${selectedScene}. `;
-        prompt += `Warm ambient glow, shallow depth of field, soft fabric textures, macro plush toy product photography. `;
+        prompt += `Warm ambient lighting, soft fabric fuzz texture, visible embroidered thread seams, 8k resolution, plush toy product photography. `;
 
-        // Configure input payload for Flux Dev
-        const inputPayload = {
-            prompt: prompt,
-            num_outputs: 1,
-            aspect_ratio: "1:1",
-            output_format: "webp",
-            output_quality: 95,
-            guidance_scale: 4.5,
-            num_inference_steps: 30
-        };
-
-        // If reference image provided, pass it with balanced strength so it keeps likeness without ruining plushie style
-        if (imageBase64) {
-            inputPayload.image = imageBase64;
-            inputPayload.prompt_strength = 0.48; // Preserves structure while forcing full plushie transformation
-        }
-
-        // Run Flux Dev
+        // Run Flux Dev without raw photo override
         const output = await replicate.run(
             "black-forest-labs/flux-dev",
-            { input: inputPayload }
+            {
+                input: {
+                    prompt: prompt,
+                    num_outputs: 1,
+                    aspect_ratio: "1:1",
+                    output_format: "webp",
+                    output_quality: 95,
+                    guidance_scale: 4.5,
+                    num_inference_steps: 30
+                }
+            }
         );
 
         let imageUrl = Array.isArray(output) ? output[0] : output;
